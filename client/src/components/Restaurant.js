@@ -8,10 +8,10 @@ function Home() {
     error: null,
     status: "pending",
   });
-  const { id } = useParams();
+  const { id } = useParams();``
 
   useEffect(() => {
-    fetch(`/restaurants/${id}`).then((r) => {
+    fetch(`http://127.0.0.1:5555/restaurants/${id}`).then((r) => {
       if (r.ok) {
         r.json().then((restaurant) =>
           setRestaurant({ data: restaurant, error: null, status: "resolved" })

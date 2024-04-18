@@ -1,41 +1,44 @@
-#!/usr/bin/env python3
+from faker import Faker
+from app import app, db, Restaurant, Pizzas, RestaurantPizza
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func  # Import func from SQLAlchemy's sql module
 
-from app import app
-from models import db, Restaurant, Pizza, RestaurantPizza
+fake = Faker()
 
-with app.app_context():
-
-    # This will delete any existing rows
-    # so you can run the seed file multiple times without having duplicate entries in your database
-    print("Deleting data...")
-    Pizza.query.delete()
-    Restaurant.query.delete()
-    RestaurantPizza.query.delete()
-
-    print("Creating restaurants...")
-    shack = Restaurant(name="Karen's Pizza Shack", address='address1')
-    bistro = Restaurant(name="Sanjay's Pizza", address='address2')
-    palace = Restaurant(name="Kiki's Pizza", address='address3')
-    restaurants = [shack, bistro, palace]
-
-    print("Creating pizzas...")
-
-    cheese = Pizza(name="Emma", ingredients="Dough, Tomato Sauce, Cheese")
-    pepperoni = Pizza(
-        name="Geri", ingredients="Dough, Tomato Sauce, Cheese, Pepperoni")
-    california = Pizza(
-        name="Melanie", ingredients="Dough, Sauce, Ricotta, Red peppers, Mustard")
-    pizzas = [cheese, pepperoni, california]
-
-    print("Creating RestaurantPizza...")
-
-    pr1 = RestaurantPizza(restaurant=shack, pizza=cheese, price=1)
-    pr2 = RestaurantPizza(restaurant=bistro, pizza=pepperoni, price=4)
-    pr3 = RestaurantPizza(restaurant=palace, pizza=california, price=5)
-    restaurantPizzas = [pr1, pr2, pr3]
-    db.session.add_all(restaurants)
-    db.session.add_all(pizzas)
-    db.session.add_all(restaurantPizzas)
+def seed_restaurants(num_restaurants=10):
+    for _ in range(num_restaurants):
+        restaurant = Restaurant(
+            name=fake.company(),
+            address=fake.address()
+        )
+        db.session.add(restaurant)
     db.session.commit()
 
-    print("Seeding done!")
+def seed_pizzas(num_pizzas=10):
+    for _ in range(num_pizzas):
+        pizza = Pizzas(
+            name=fake.word(),
+            ingredients=', '.join(fake.words(nb=3))
+        )
+        db.session.add(pizza)
+    db.session.commit()
+
+def seed_restaurant_pizzas(num_combinations=20):
+    for _ in range(num_combinations):
+        restaurant = Restaurant.query.order_by(func.random()).first()  # Use func here
+        pizza = Pizzas.query.order_by(func.random()).first()  # Use func here
+        price = round(fake.pyfloat(min_value=5, max_value=20), 2)
+
+        restaurant_pizza = RestaurantPizza(
+            restaurant_id=restaurant.id,
+            pizza_id=pizza.id,
+            price=price
+        )
+        db.session.add(restaurant_pizza)
+    db.session.commit()
+
+if __name__ == '__main__':
+    with app.app_context():
+        seed_restaurants()
+        seed_pizzas()
+        seed_restaurant_pizzas()

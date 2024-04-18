@@ -5,13 +5,13 @@ function Home() {
   const [restaurants, setRestaurants] = useState([]);
 
   useEffect(() => {
-    fetch("/restaurants")
+    fetch("http://127.0.0.1:5555/restaurants")
       .then((r) => r.json())
       .then(setRestaurants);
   }, []);
 
   function handleDelete(id) {
-    fetch(`/restaurants/${id}`, {
+    fetch(`http://127.0.0.1:5555/restaurants/${id}`, {
       method: "DELETE",
     }).then((r) => {
       if (r.ok) {
